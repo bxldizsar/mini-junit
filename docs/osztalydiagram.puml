@@ -1,0 +1,97 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+
+package minijunit.annotacio {
+  annotation Teszt
+  annotation Elotte
+  annotation Utana
+  annotation VartKivetel {
+    value() : Class<? extends Throwable>
+  }
+}
+
+package minijunit.assertion {
+  class Assert <<final>> {
+    + {static} egyenlo(vart : Object, kapott : Object)
+    + {static} egyenlo(vart : double, kapott : double, tures : double)
+    + {static} igaz(feltetel : boolean)
+    + {static} hamis(feltetel : boolean)
+    + {static} nemNull(ertek : Object)
+    + {static} dobja(vartTipus : Class, kod : Runnable)
+  }
+  class AssertHiba
+  RuntimeException <|-- AssertHiba
+}
+
+package minijunit.futtato {
+  enum Allapot {
+    SIKERES
+    BUKOTT
+    HIBAS
+  }
+  class TesztEredmeny <<record>> {
+    nev : String
+    allapot : Allapot
+    uzenet : String
+    ido : Duration
+    + sikeres() : boolean
+  }
+  class Osszesites <<record>> {
+    osztalyNev : String
+    eredmenyek : List<TesztEredmeny>
+    + darab(a : Allapot) : long
+    + osszIdo() : Duration
+    + mindSikeres() : boolean
+  }
+  class TesztOsztaly {
+    - osztaly : Class<?>
+    + getTesztek() : List<Method>
+    + getElotte() : List<Method>
+    + getUtana() : List<Method>
+    + ujPeldany() : Object
+  }
+  class TesztFuttato {
+    + futtat(tesztOsztaly : Class<?>) : Osszesites
+    - egyetFuttat(...)
+    - hiv(m : Method, peldany : Object) : Throwable
+    - osztalyoz(t : Throwable, elotag : String)
+  }
+}
+
+package minijunit.jelentes {
+  interface Jelentes {
+    + kiir(o : Osszesites)
+  }
+  class KonzolosJelentes {
+    - ki : PrintStream
+  }
+  Jelentes <|.. KonzolosJelentes
+}
+
+package minijunit.pelda {
+  class Jegy <<record>>
+  class JegyTesztek
+}
+
+package minijunit.main {
+  class Main
+}
+
+Osszesites "1" *-- "*" TesztEredmeny
+TesztEredmeny --> Allapot
+TesztFuttato ..> TesztOsztaly : felderit
+TesztFuttato ..> Osszesites : letrehoz
+TesztFuttato ..> AssertHiba : bukas vs hiba
+TesztFuttato ..> VartKivetel
+TesztOsztaly ..> Teszt
+TesztOsztaly ..> Elotte
+TesztOsztaly ..> Utana
+Assert ..> AssertHiba : dob
+Jelentes ..> Osszesites
+JegyTesztek ..> Jegy
+JegyTesztek ..> Assert
+Main --> TesztFuttato
+Main --> Jelentes
+Main ..> JegyTesztek
+@enduml
