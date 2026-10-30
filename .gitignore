@@ -1,0 +1,7 @@
+target/
+build/
+dist/
+nbproject/
+nbactions.xml
+nb-configuration.xml
+*.class
